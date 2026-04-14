@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Jadwal Noyz ✨</title>
+    
+    <!-- Tailwind CSS untuk styling yang cepat dan responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Quicksand untuk kesan lucu dan bulat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Confetti JS untuk efek interaktif saat jadwal selesai -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- Phosphor Icons untuk ikon-ikon keren -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Konfigurasi Tailwind untuk Font & Warna Custom -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            pink: '#ffd1dc',
+                            blue: '#b8e1ff',
+                            purple: '#d4c4fb',
+                            yellow: '#ffefb5',
+                            green: '#c1f0c1'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* CSS Tambahan untuk efek Glassmorphism dan Animasi */
+        body {
+            /* Background gradien pastel yang bergerak halus */
+            background: linear-gradient(-45deg, #ffd1dc, #d4c4fb, #b8e1ff, #ffefb5);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Kustomisasi Scrollbar agar imut */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d4c4fb;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b69df8;
+        }
+
+        /* Animasi list item */
+        .task-enter {
+            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Checkbox Custom */
+        .custom-checkbox {
+            appearance: none;
+            background-color: #fff;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.5em;
+            height: 1.5em;
+            border: 2px solid #d4c4fb;
+            border-radius: 0.5em;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .custom-checkbox::before {
+            content: "";
+            width: 0.8em;
+            height: 0.8em;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em white;
+            background-color: transform;
+            transform-origin: center;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+
+        .custom-checkbox:checked {
+            background-color: #a78bfa;
+            border-color: #a78bfa;
+        }
+
+        .custom-checkbox:checked::before {
+            transform: scale(1);
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-gray-700 flex justify-center py-10 px-4">
+
+    <!-- Container Utama -->
+    <div class="glass-card w-full max-w-lg rounded-[2rem] shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] p-6 md:p-8 flex flex-col h-fit">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-block bg-white rounded-full p-3 shadow-sm mb-3">
+                <i class="ph ph-sparkle text-4xl text-purple-500 animate-pulse"></i>
+            </div>
+            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500">
+                Jadwal Harian Noyz
+            </h1>
+            <p class="text-gray-500 mt-2 font-medium">Bikin harimu makin kece & produktif! ✨</p>
+        </div>
+
+        <!-- Form Tambah Jadwal -->
+        <form id="task-form" class="bg-white/80 p-5 rounded-2xl shadow-sm mb-6 flex flex-col gap-4 border border-white">
+            <div>
+                <label for="task-input" class="block text-sm font-bold text-gray-600 mb-1">Mau ngapain hari ini?</label>
+                <input type="text" id="task-input" required placeholder="Cth: Main Valorant, Belajar Coding..." 
+                    class="w-full bg-gray-50 border-2 border-transparent focus:border-purple-300 focus:bg-white focus:ring-0 rounded-xl px-4 py-3 outline-none transition-all placeholder-gray-400">
+            </div>
+            
+            <div class="flex gap-3">
+                <div class="flex-1">
+                    <label for="category-input" class="block text-sm font-bold text-gray-600 mb-1">Kategori</label>
+                    <div class="relative">
+                        <select id="category-input" 
+                            class="w-full bg-gray-50 border-2 border-transparent focus:border-purple-300 focus:bg-white rounded-xl px-4 py-3 appearance-none outline-none transition-all cursor-pointer">
+                            <option value="Rutinitas">🔄 Rutinitas</option>
+                            <option value="Hobi">🎮 Hobi</option>
+                            <option value="Belajar">📚 Belajar</option>
+                            <option value="Penting">⭐ Penting</option>
+                            <option value="Olahraga">🏃 Olahraga</option>
+                        </select>
+                        <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                    </div>
+                </div>
+                <div class="w-1/3">
+                    <label for="time-input" class="block text-sm font-bold text-gray-600 mb-1">Jam</label>
+                    <input type="time" id="time-input" required
+                        class="w-full bg-gray-50 border-2 border-transparent focus:border-purple-300 focus:bg-white rounded-xl px-4 py-3 outline-none transition-all cursor-pointer">
+                </div>
+            </div>
+
+            <button type="submit" 
+                class="w-full bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg transform transition hover:-translate-y-0.5 mt-2 flex items-center justify-center gap-2">
+                <i class="ph ph-plus-circle text-xl"></i> Tambah Jadwal
+            </button>
+        </form>
+
+        <!-- Filter/Progress Bar -->
+        <div class="flex justify-between items-center mb-4 px-2">
+            <h2 class="font-bold text-lg text-gray-700 flex items-center gap-2">
+                <i class="ph ph-list-checks text-purple-500"></i> Daftar Kegiatan
+            </h2>
+            <div id="progress-text" class="text-sm font-bold text-pink-500 bg-pink-100 px-3 py-1 rounded-full">
+                0/0 Selesai
+            </div>
+        </div>
+
+        <!-- Daftar Jadwal (List) -->
+        <ul id="task-list" class="flex flex-col gap-3 overflow-y-auto pr-1 pb-4" style="max-height: 400px;">
+            <!-- Isi list akan di-generate oleh JavaScript -->
+        </ul>
+
+        <!-- State Kosong (akan disembunyikan via JS jika ada jadwal) -->
+        <div id="empty-state" class="hidden flex-col items-center justify-center py-8 text-center opacity-70">
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Sleeping%20Face.png" alt="Sleeping Emoji" class="w-24 h-24 mb-4 drop-shadow-md" />
+            <p class="font-bold text-gray-500">Belum ada jadwal nih...</p>
+            <p class="text-sm text-gray-400">Tambahin jadwal biar hari Noyz makin seru!</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-auto pt-6 text-center">
+            <p class="text-xs font-bold text-gray-400">Made with <span class="text-pink-400 animate-pulse inline-block">❤️</span> by Noyz</p>
+        </div>
+    </div>
+
+    <!-- JavaScript Logika Aplikasi -->
+    <script>
+        // DOM Elements
+        const form = document.getElementById('task-form');
+        const taskInput = document.getElementById('task-input');
+        const categoryInput = document.getElementById('category-input');
+        const timeInput = document.getElementById('time-input');
+        const taskList = document.getElementById('task-list');
+        const emptyState = document.getElementById('empty-state');
+        const progressText = document.getElementById('progress-text');
+
+        // State: Mengambil data dari localStorage atau array kosong
+        let tasks = JSON.parse(localStorage.getItem('noyz_schedule')) || [];
+
+        // Mapping warna badge untuk setiap kategori
+        const categoryColors = {
+            'Rutinitas': 'bg-blue-100 text-blue-600',
+            'Hobi': 'bg-purple-100 text-purple-600',
+            'Belajar': 'bg-green-100 text-green-600',
+            'Penting': 'bg-red-100 text-red-600',
+            'Olahraga': 'bg-orange-100 text-orange-600'
+        };
+
+        // Fungsi menyimpan ke LocalStorage
+        function saveTasks() {
+            localStorage.setItem('noyz_schedule', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        // Efek Konfeti! 🎉
+        function fireConfetti() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#d4c4fb']
+            });
+        }
+
+        // Render Jadwal ke Layar
+        function renderTasks() {
+            taskList.innerHTML = '';
+            
+            // Urutkan jadwal berdasarkan jam (dari yang paling pagi)
+            tasks.sort((a, b) => a.time.localeCompare(b.time));
+
+            const totalTasks = tasks.length;
+            const completedTasks = tasks.filter(t => t.completed).length;
+
+            // Update Progress Text
+            progressText.innerText = `${completedTasks}/${totalTasks} Selesai`;
+            if (totalTasks > 0 && completedTasks === totalTasks) {
+                progressText.classList.replace('text-pink-500', 'text-green-500');
+                progressText.classList.replace('bg-pink-100', 'bg-green-100');
+                progressText.innerText = '✨ Semua Selesai! ✨';
+            } else {
+                progressText.classList.replace('text-green-500', 'text-pink-500');
+                progressText.classList.replace('bg-green-100', 'bg-pink-100');
+            }
+
+            // Tampilkan atau sembunyikan gambar kosong
+            if (totalTasks === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+            }
+
+            // Buat elemen HTML untuk tiap jadwal
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = `task-enter bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 transition-all duration-300 hover:shadow-md ${task.completed ? 'opacity-60 bg-gray-50' : ''}`;
+                li.style.animationDelay = `${index * 0.1}s`;
+
+                li.innerHTML = `
+                    <input type="checkbox" class="custom-checkbox flex-shrink-0" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})">
+                    
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-bold text-gray-800 text-lg truncate ${task.completed ? 'line-through text-gray-400' : ''}">
+                            ${task.text}
+                        </h3>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-md flex items-center gap-1 bg-gray-100 text-gray-600">
+                                <i class="ph ph-clock"></i> ${task.time}
+                            </span>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-md ${categoryColors[task.category]}">
+                                ${task.category}
+                            </span>
+                        </div>
+                    </div>
+
+                    <button onclick="deleteTask(${task.id})" class="w-9 h-9 rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-colors flex-shrink-0">
+                        <i class="ph ph-trash text-lg"></i>
+                    </button>
+                `;
+                taskList.appendChild(li);
+            });
+        }
+
+        // Tambah Jadwal Baru
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const text = taskInput.value.trim();
+            const category = categoryInput.value;
+            const time = timeInput.value;
+
+            if (text && time) {
+                const newTask = {
+                    id: Date.now(), // Unique ID
+                    text: text,
+                    category: category,
+                    time: time,
+                    completed: false
+                };
+
+                tasks.push(newTask);
+                saveTasks();
+                
+                // Reset input (waktu dibiarkan agar mudah input jadwal berurutan)
+                taskInput.value = '';
+                taskInput.focus();
+            }
+        });
+
+        // Toggle Centang Jadwal (Selesai/Belum)
+        window.toggleTask = function(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                
+                // Jika baru saja dicentang menjadi selesai, keluarkan konfeti!
+                if (task.completed) {
+                    fireConfetti();
+                }
+                
+                saveTasks();
+            }
+        };
+
+        // Hapus Jadwal
+        window.deleteTask = function(id) {
+            // Animasi sedikit sebelum hapus (opsional, via konfirmasi)
+            if(confirm("Yakin mau hapus jadwal ini? 🥺")) {
+                tasks = tasks.filter(t => t.id !== id);
+                saveTasks();
+            }
+        };
+
+        // Render awal saat halaman dimuat
+        renderTasks();
+    </script>
+</body>
+</html>
